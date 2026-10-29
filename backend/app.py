@@ -204,10 +204,30 @@ def minfo():
         "loaded": model is not None,
     }
 
+<<<<<<< HEAD
 # static frontend mounting
 # hack to figure out absolute path to frontend dir
 fend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
 if os.path.exists(fend_path):
     app.mount("/", StaticFiles(directory=fend_path, html=True), name="frontend")
+=======
+from fastapi.responses import Response
+
+@app.get("/api/proxy-image")
+def proxy_image(url: str = Query(...)):
+    """Proxies an image URL to bypass browser CORS restrictions."""
+    try:
+        resp = requests.get(url, stream=True, timeout=10)
+        resp.raise_for_status()
+        return Response(content=resp.content, media_type=resp.headers.get("Content-Type", "image/jpeg"))
+    except Exception as e:
+        logger.error(f"Error proxying image {url}: {e}")
+        raise HTTPException(status_code=400, detail="Failed to fetch image from URL.")
+
+# Mount static files for frontend if directory exists
+frontend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
+if os.path.exists(frontend_path):
+    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
+>>>>>>> b1f0ee9 (Update Smart Vision project)
 else:
     logger.warning("frontend dir missing, ignoring static mount")
